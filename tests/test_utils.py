@@ -4,6 +4,7 @@ from pyspark.sql.functions import col
 from pyspark.sql.types import StructType, StructField, LongType, IntegerType
 import sys
 import os
+import logging
 
 # Add the src directory to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
@@ -15,6 +16,7 @@ MAX_N = 100
 class PySparkTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        logging.basicConfig(level=logging.CRITICAL)  # Output only critical messages in testing environment
         cls.spark = SparkSession.builder.appName("Sample PySpark ETL").getOrCreate()
 
     @classmethod
@@ -23,7 +25,10 @@ class PySparkTestCase(unittest.TestCase):
 
 # Define unit test
 class TestCommonNeighbors(PySparkTestCase):
-
+    def setUp(self):
+        self.base_test_dir = os.path.join("tests", "data")
+        # self.test_dirs = [os.path.join(base_test_dir, d) for d in os.listdir(base_test_dir) if os.path.isdir(os.path.join(base_test_dir, d))]
+        
     def load_expected_result(self, spark_session, path: str):
         schema = StructType([
             StructField("node1", IntegerType(), True),
@@ -34,8 +39,8 @@ class TestCommonNeighbors(PySparkTestCase):
         return df
 
     def load_test_data(self, test_dir):
-        """ Load test data from a specified directory containing input.csv and expected.csv """
-        input_path = os.path.join(test_dir, 'input.csv')
+        """ Load test data from a specified directory containing input and expected.csv """
+        input_path = os.path.join(test_dir, 'input')
         expected_directed_path = os.path.join(test_dir, 'expected_directed.csv')
         expected_undirected_path = os.path.join(test_dir, 'expected_undirected.csv')
         
@@ -45,20 +50,48 @@ class TestCommonNeighbors(PySparkTestCase):
         
         return input_df, expected_directed_df, expected_undirected_df
     
-    def test_cases(self):
-        test_dirs = [os.path.join("tests", "data", d) for d in os.listdir(os.path.join("tests", "data")) if os.path.isdir(os.path.join("tests", "data", d))]
-        for test_dir in test_dirs:
-            input_df, expected_directed_df, expected_undirected_df = self.load_test_data(test_dir)
-            with self.subTest(test_dir=test_dir + "_directed"):
-                # Directed
-                actual_directed_df = find_common_neighbors(input_df, MAX_N, False)
-                self.assertTrue(self.areDataFramesEqual(actual_directed_df, expected_directed_df), "Directed test failed")
+    def run_sub_tests(self, test_dir):
+        test_name = os.path.basename(test_dir)
+        input_df, expected_directed_df, expected_undirected_df = self.load_test_data(test_dir)
 
-            with self.subTest(test_dir=test_dir + "_undirected"):
-                # Undirected, reusing input_df loaded above
-                actual_undirected_df = find_common_neighbors(input_df, MAX_N, True)
-                self.assertTrue(self.areDataFramesEqual(actual_undirected_df, expected_undirected_df), "Undirected test failed")
+        with self.subTest(test_name + "_directed"):
+            actual_directed_df = find_common_neighbors(input_df, MAX_N, False)
+            self.assertTrue(self.areDataFramesEqual(actual_directed_df, expected_directed_df), f"{test_name}_directed test failed")
 
+        with self.subTest(test_name + "_undirected"):
+            actual_undirected_df = find_common_neighbors(input_df, MAX_N, True)
+            self.assertTrue(self.areDataFramesEqual(actual_undirected_df, expected_undirected_df), f"{test_name}_undirected test failed")
+
+    def test_default(self):
+        test_dir = os.path.join(self.base_test_dir, "test_default")
+        self.run_sub_tests(test_dir)
+
+    def test_default_null(self):
+        test_dir = os.path.join(self.base_test_dir, "test_default_null")
+        self.run_sub_tests(test_dir)
+
+    def test_no_common_neighbors(self):
+        test_dir = os.path.join(self.base_test_dir, "test_no_common_neighbors")
+        self.run_sub_tests(test_dir)
+
+
+    def test_empty_dir(self):
+        test_dir = os.path.join(self.base_test_dir, "test_empty_dir\input")
+        with self.assertRaises(FileNotFoundError) as context:
+            load_csv_to_df(self.spark, test_dir)
+        
+        # Check if the error message is correct
+        self.assertIn("No CSV files found in the directory", str(context.exception))
+
+    def test_missing_dir(self):
+        test_dir = os.path.join(self.base_test_dir, "test_missing_dir\input")
+        with self.assertRaises(FileNotFoundError) as context:
+            load_csv_to_df(self.spark, test_dir)
+        
+        # Check if the error message is correct
+        self.assertIn(f"The specified directory does not exist: {test_dir}", str(context.exception))
+
+        
     
     def areDataFramesEqual(self, df1, df2, tol=0):
         """ Check if two dataframes are equal, allowing for a tolerance in numeric columns """
