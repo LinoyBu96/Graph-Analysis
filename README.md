@@ -42,9 +42,11 @@ Before running the application, configure the input parameters in the command li
 
 ## Running the Application
 
-To run the application, use the following command from the root directory of your project, for example:
+To run the application, use the following command from the root directory of your project. For example:
 
+```bash
 python3 .\src\main.py -n 3 --input input/data --output_mode show
+```
 
 ## Output
 
@@ -53,8 +55,8 @@ python3 .\src\main.py -n 3 --input input/data --output_mode show
 
 ## Additional Notes
 
-- Ensure your Spark session is configured correctly in `utils.py` if modifications are needed.
-- Check the `logging_config.py` for adjusting log levels and formats to match your preferences or requirements.
+- Ensure your Spark session is configured correctly in `src/utils.py` if modifications are needed.
+- Check the `src/logging_config.py` for adjusting log levels and formats to match your preferences or requirements.
 
 
 

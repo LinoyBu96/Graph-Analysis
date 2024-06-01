@@ -9,6 +9,8 @@ def setup_logging(current_time):
     # Create a unique log file for each run
     log_filename = LOG_FILE_TEMPLATE.format(current_time=current_time)
     log_full_path = os.path.join(LOGS_DIR, log_filename)
+    if not os.path.exists(LOGS_DIR):
+        os.makedirs(LOGS_DIR)
 
     logging.basicConfig(
         filename=log_full_path,  # Log file path
