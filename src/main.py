@@ -12,7 +12,7 @@ OUTPUT_FILE_TEMPLATE = 'output_{current_time}.csv'
 FILENAME_DATE_FORMAT = "%Y%m%d_%H%M%S"
 SAVE = "save"
 
-sys.argv = ['ipykernel_launcher.py', '-n', '20', '--input', 'input/data.csv', '--output', 'save', '--undirected']
+sys.argv = ['ipykernel_launcher.py', '-n', '20', '--input', 'input/data.csv', '--output_mode', 'save', '--undirected']
 
 def setup_default_output_path(args, current_time):
     if not os.path.exists(DEFAULT_OUTPUT_DIR):
@@ -24,12 +24,12 @@ def parse_args(current_time) -> None:
     parser = argparse.ArgumentParser(description='Graph Analysis to find common neighbors.')
     parser.add_argument('-n', type=int, required=True, help='Number of top node pairs to retrieve')  # Require the number of node pairs
     parser.add_argument('--input', required=True, help='Input path to the CSV files containing the graph data')  # Require input path
-    parser.add_argument('--output', choices=['show', 'save'], required=True, help='Output mode: "show" on console or "save" to CSV file')  # Require output mode
+    parser.add_argument('--output_mode', choices=['show', 'save'], required=True, help='Output mode: "show" on console or "save" to CSV file')  # Require output mode
     parser.add_argument('--output_path', help='Path to save the results if output mode is "save"')
     parser.add_argument('--undirected', action='store_true', help='Treat the graph as undirected')
     args = parser.parse_args()
 
-    if args.output == SAVE and not args.output_path:
+    if args.output_mode == SAVE and not args.output_path:
         setup_default_output_path(args, current_time)
     return args
 
@@ -48,7 +48,7 @@ def main() -> None:
         args = parse_args(current_time)
         logging.info(f"Running analysis with settings: {args}")
         spark = create_spark_session()
-        run_analysis(spark, args.n, args.input, args.output, args.output_path, args.undirected)
+        run_analysis(spark, args.n, args.input, args.output_mode, args.output_path, args.undirected)
         logging.info("Analysis completed")
     except Exception as e:
         logging.error(f"An error occurred: {e}")
