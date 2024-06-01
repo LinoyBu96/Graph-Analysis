@@ -25,7 +25,7 @@ The project directory is organized as follows:
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/yourusername/graph-analysis.git
+git clone https://github.com/LinoyBu96/Graph-Analysis.git
 cd graph-analysis
 pip install -r requirements.txt
 ```
