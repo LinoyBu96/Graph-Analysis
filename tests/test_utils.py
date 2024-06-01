@@ -63,19 +63,25 @@ class TestCommonNeighbors(PySparkTestCase):
     def areDataFramesEqual(self, df1, df2, tol=0):
         """ Check if two dataframes are equal, allowing for a tolerance in numeric columns """
         if len(df1.schema.fields) != len(df2.schema.fields):
-            print("Schemas do not match in number of fields:")
+            print("Schemas do not match in number of fields.")
             return False
 
         for f1, f2 in zip(df1.schema.fields, df2.schema.fields):
             if f1.name != f2.name or f1.dataType != f2.dataType:
                 print("Schemas do not match:")
-                print(f"Field {f1.name} in df1 is of type {f1.dataType}, while in df2 it is of type {f2.dataType}")
+                print(f"Field {f1.name} in actual results is of type {f1.dataType}, while in expected results it is of type {f2.dataType}")
                 return False
-
-        if df1.subtract(df2).count() != 0 or df2.subtract(df1).count() != 0:
+        
+        # Check data contents, focusing on differences that impact the comparison
+        df1_not_in_df2 = df1.subtract(df2)
+        df2_not_in_df1 = df2.subtract(df1)
+        
+        if df1_not_in_df2.count() != 0 or df2_not_in_df1.count() != 0:
             print("Data does not match:")
-            print("Rows in df1 not in df2:", df1.subtract(df2).show())
-            print("Rows in df2 not in df1:", df2.subtract(df1).show())
+            print("Rows in actual results not in expected results:")
+            df1_not_in_df2.show(truncate=False)
+            print("Rows in expected results not in actual results:")
+            df2_not_in_df1.show(truncate=False)
             return False
 
         return True
