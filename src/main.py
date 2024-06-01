@@ -13,7 +13,7 @@ OUTPUT_FILE_TEMPLATE = 'output_{current_time}.csv'
 FILENAME_DATE_FORMAT = "%Y%m%d_%H%M%S"
 SAVE = "save"
 
-sys.argv = ['ipykernel_launcher.py', '-n', '20', '--input', 'tests/data/test_empty_dir/input', '--output_mode', 'show']
+# sys.argv = ['ipykernel_launcher.py', '-n', '20', '--input', 'input/data3', '--output_mode', 'show']
 
 def setup_default_output_path(args: argparse.Namespace, current_time: str) -> None:
     """
@@ -33,6 +33,22 @@ def setup_default_output_path(args: argparse.Namespace, current_time: str) -> No
     output_filename = OUTPUT_FILE_TEMPLATE.format(current_time=current_time)
     args.output_path = os.path.join(DEFAULT_OUTPUT_DIR, output_filename)
 
+
+def create_parser() -> argparse.ArgumentParser:
+    """
+    Creates and returns the argument parser.
+
+    Returns:
+        argparse.ArgumentParser: The argument parser.
+    """
+    parser = argparse.ArgumentParser(description='Graph Analysis to find common neighbors.')
+    parser.add_argument('-n', type=int, required=True, help='Number of top node pairs to retrieve')
+    parser.add_argument('--input', required=True, help='Input path to the CSV files containing the graph data')
+    parser.add_argument('--output_mode', choices=['show', 'save'], required=True, help='Output mode: "show" on console or "save" to CSV file')
+    parser.add_argument('--output_path', help='Path to save the results if output mode is "save"')
+    parser.add_argument('--undirected', action='store_true', help='Treat the graph as undirected')
+    return parser
+
 def parse_args(current_time: str) -> argparse.Namespace:
     """
     Parses command line arguments needed. Sets up default paths for output if necessary.
@@ -43,12 +59,7 @@ def parse_args(current_time: str) -> argparse.Namespace:
     Returns:
         argparse.Namespace: Namespace containing all the arguments with values.
     """
-    parser = argparse.ArgumentParser(description='Graph Analysis to find common neighbors.')
-    parser.add_argument('-n', type=int, required=True, help='Number of top node pairs to retrieve')  # Require the number of node pairs
-    parser.add_argument('--input', required=True, help='Input path to the CSV files containing the graph data')  # TODO: change to dir
-    parser.add_argument('--output_mode', choices=['show', 'save'], required=True, help='Output mode: "show" on console or "save" to CSV file')  # Require output mode
-    parser.add_argument('--output_path', help='Path to save the results if output mode is "save"')
-    parser.add_argument('--undirected', action='store_true', help='Treat the graph as undirected')
+    parser = create_parser()
     args = parser.parse_args()
 
     if args.output_mode == SAVE and not args.output_path:
@@ -80,20 +91,25 @@ def main():
     # Define `current_time` at the start of main to ensure consistent timestamps across log and output files generated during this run.
     current_time = datetime.now().strftime(FILENAME_DATE_FORMAT)
     setup_logging(current_time)
-    logging.info("Starting the application")
+    logging.info("Starting the application.")
 
     try:
         args = parse_args(current_time)
-        logging.info(f"Running analysis with settings: {args}")
+        logging.info(f"Running analysis with settings: {args}.")
         spark = create_spark_session()
         run_analysis(spark, args.n, args.input, args.output_mode, args.output_path, args.undirected)
-        logging.info("Analysis completed")
+        logging.info("Analysis completed.")
     except Exception as e:
-        logging.error(f"An error occurred: {e}")
+        logging.error(f"An error occurred: {e}.")
         raise
     finally:
-        logging.info("Shutting down the application")
+        logging.info("Shutting down the application.")
         spark.stop()
 
 if __name__ == "__main__":
+    if '-h' in sys.argv or '--help' in sys.argv:
+        # Manually invoke help to avoid running the rest of the script
+        parser = create_parser()
+        parser.print_help()
+        sys.exit(0)
     main()

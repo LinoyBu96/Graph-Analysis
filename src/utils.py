@@ -31,8 +31,6 @@ def check_for_csv_files(spark_session: SparkSession, path: str):
     Raises:
         FileNotFoundError: In case the directory does not exist or contains no CSV files.
     """
-    logging.info(f"Checking for CSV files in the directory: {path}")
-
     # Access Java VM and Hadoop Configuration
     jvm = spark_session._jvm
     jsc = spark_session._jsc
@@ -41,8 +39,7 @@ def check_for_csv_files(spark_session: SparkSession, path: str):
 
     # Check if the directory exists
     if not fs.exists(hadoop_path):
-        error_message = f"The specified directory does not exist: {path}"
-        logging.error(error_message)
+        logging.error(f"The specified directory does not exist: {path}.")
         raise FileNotFoundError(error_message)
 
     # Check if there are any CSV files in the directory
@@ -50,7 +47,7 @@ def check_for_csv_files(spark_session: SparkSession, path: str):
     csv_files = [file.getPath().getName() for file in status if file.getPath().getName().endswith('.csv')]
 
     if not csv_files:
-        error_message = f"No CSV files found in the directory: {path}"
+        error_message = f"No CSV files found in the directory: {path}."
         logging.error(error_message)
         raise FileNotFoundError(error_message)
 
@@ -67,7 +64,7 @@ def load_csv_to_df(spark_session: SparkSession, path: str) -> DataFrame:
     Returns:
         DataFrame: A Dataframe containing the data loaded from the CSV files.
     """
-    logging.info(f"Attempting to load CSV data from directory: {path}")
+    logging.info(f"Attempting to load CSV data from directory: {path}.")
 
     # TODO: define specific schema?
 
@@ -87,7 +84,7 @@ def load_csv_to_df(spark_session: SparkSession, path: str) -> DataFrame:
     check_for_csv_files(spark_session, path)
 
     df = spark_session.read.csv(path, header=True, inferSchema=True)
-    logging.info(f"Loaded DataFrame with {df.count()} records from {path}")
+    logging.info(f"Loaded DataFrame with {df.count()} records from {path}.")
     return df
 
 
@@ -159,13 +156,13 @@ def handle_output(df, output_mode, output_path=None):
         output_mode (str): The mode of output; either 'show' or 'save'.
         output_path (str, optional): The path where the Dataframe should be saved if the mode is 'save'.
     """
-    logging.info(f"Handling output, mode: {output_mode}")
+    logging.info(f"Handling output, mode: {output_mode}.")
     if output_mode == 'show':
-        logging.info("Displaying DataFrame")
+        logging.info("Displaying DataFrame.")
         df.show()
     elif output_mode == 'save':
         if output_path is not None:
-            logging.info(f"Saving DataFrame to {output_path}")
+            logging.info(f"Saving DataFrame to {output_path}.")
             df.write.csv(output_path, header=True, mode='overwrite')
         else:
             logging.error("Output path must be provided for save mode.")
