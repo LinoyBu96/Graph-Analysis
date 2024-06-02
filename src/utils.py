@@ -1,8 +1,8 @@
 from pyspark.sql.functions import col, DataFrame
 from pyspark.sql import SparkSession
 import logging
-import os
-from glob import glob
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+
 
 def create_spark_session() -> SparkSession:
     """
@@ -67,26 +67,17 @@ def load_csv_to_df(spark_session: SparkSession, path: str) -> DataFrame:
     Returns:
         DataFrame: A Dataframe containing the data loaded from the CSV files.
     """
-    logging.info(f"Attempting to load CSV data from directory: {path}.")
-
-    # TODO: define specific schema?
-
-    # Check if the directory exists
-    # if not os.path.exists(path):
-    #     error_message = f"The specified directory does not exist: {path}"
-    #     logging.error(error_message)
-    #     raise FileNotFoundError(error_message)
-    
-    # # Check if the directory contains any CSV files
-    # csv_files = glob(os.path.join(path, '*.csv'))
-    # if not csv_files:
-    #     error_message = f"No CSV files found in the directory: {path}"
-    #     logging.error(error_message)
-    #     raise FileNotFoundError(error_message)
-    
+    logging.info(f"Attempting to load CSV data from directory: {path}.")    
     check_for_csv_files(spark_session, path)
 
-    df = spark_session.read.csv(path, header=True, inferSchema=True)
+    # Define schema
+    schema = StructType([
+        StructField("src", IntegerType(), True),
+        StructField("dst", IntegerType(), True)
+    ])
+
+    # Load CSV files from directory
+    df = spark_session.read.csv(path, header=True, schema=schema)
     logging.info(f"Loaded DataFrame with {df.count()} records from {path}.")
     return df
 

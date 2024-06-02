@@ -13,8 +13,6 @@ OUTPUT_FILE_TEMPLATE = 'output_{current_time}.csv'
 FILENAME_DATE_FORMAT = "%Y%m%d_%H%M%S"
 SAVE = "save"
 
-sys.argv = ['ipykernel_launcher.py', '-n', '3', '--input', 'input/data', '--output_mode', 'show']
-
 def setup_default_output_path(args: argparse.Namespace, current_time: str) -> None:
     """
     Sets up the default path for saving output csv file if not specified.

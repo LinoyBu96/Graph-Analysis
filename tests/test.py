@@ -54,13 +54,15 @@ class TestCommonNeighbors(PySparkTestCase):
         test_name = os.path.basename(test_dir)
         input_df, expected_directed_df, expected_undirected_df = self.load_test_data(test_dir)
 
-        with self.subTest(test_name + "_directed"):
+        full_test_name = test_name + "_directed"
+        with self.subTest(full_test_name):
             actual_directed_df = find_common_neighbors(input_df, MAX_N, False)
-            self.assertTrue(self.areDataFramesEqual(actual_directed_df, expected_directed_df), f"{test_name}_directed test failed")
+            self.assertTrue(self.areDataFramesEqual(actual_directed_df, expected_directed_df, full_test_name), f"{full_test_name} test failed")
 
-        with self.subTest(test_name + "_undirected"):
+        full_test_name = test_name + "_undirected"
+        with self.subTest(full_test_name):
             actual_undirected_df = find_common_neighbors(input_df, MAX_N, True)
-            self.assertTrue(self.areDataFramesEqual(actual_undirected_df, expected_undirected_df), f"{test_name}_undirected test failed")
+            self.assertTrue(self.areDataFramesEqual(actual_undirected_df, expected_undirected_df, full_test_name), f"{full_test_name} test failed")
 
     def test_default(self):
         test_dir = os.path.join(self.base_test_dir, "test_default")
@@ -72,6 +74,10 @@ class TestCommonNeighbors(PySparkTestCase):
 
     def test_no_common_neighbors(self):
         test_dir = os.path.join(self.base_test_dir, "test_no_common_neighbors")
+        self.run_sub_tests(test_dir)
+        
+    def test_no_common_neighbors(self):
+        test_dir = os.path.join(self.base_test_dir, "test_larger_data")
         self.run_sub_tests(test_dir)
 
     def test_empty_dir(self):
@@ -90,33 +96,66 @@ class TestCommonNeighbors(PySparkTestCase):
         # Check if the error message is correct
         self.assertIn(f"The specified directory does not exist: {test_dir}.", str(context.exception))
     
-    def areDataFramesEqual(self, df1, df2, tol=0):
-        """ Check if two dataframes are equal, allowing for a tolerance in numeric columns """
+    def areDataFramesEqual(self, df1, df2, test_name):
+        """
+        Check if two dataframes are equal, allowing for a tolerance in numeric columns.
+
+        Args:
+            df1 (DataFrame): First DataFrame to compare.
+            df2 (DataFrame): Second DataFrame to compare.
+            test_name (str): Name of the test for reporting results.
+        """
+        if not self._schemas_match(df1, df2, test_name):
+            return False
+
+        if not self._data_match(df1, df2, test_name):
+            return False
+
+        self._print_test_result(test_name, "PASSED")
+        return True
+    
+    def _schemas_match(self, df1, df2, test_name):
+        """Check if the schemas of two dataframes match."""
         if len(df1.schema.fields) != len(df2.schema.fields):
-            print("Schemas do not match in number of fields.")
+            self._print_failure(test_name, "Schemas do not match in number of fields.")
             return False
 
         for f1, f2 in zip(df1.schema.fields, df2.schema.fields):
             if f1.name != f2.name or f1.dataType != f2.dataType:
-                print("Schemas do not match:")
-                print(f"Field {f1.name} in actual results is of type {f1.dataType}, while in expected results it is of type {f2.dataType}")
+                self._print_failure(test_name, "Schemas do not match.")
+                print(f"Field '{f1.name}' in actual results is of type {f1.dataType},")
+                print(f"while in expected results it is of type {f2.dataType}.")
                 return False
-        
-        # Check data contents, focusing on differences that impact the comparison
+        return True
+    
+    def _data_match(self, df1, df2, test_name):
+        """Check if the data of two dataframes match."""
         df1_not_in_df2 = df1.subtract(df2)
         df2_not_in_df1 = df2.subtract(df1)
         
         if df1_not_in_df2.count() != 0 or df2_not_in_df1.count() != 0:
-            print("Data does not match:")
+            self._print_failure(test_name, "Data does not match.")
             print("Rows in actual results not in expected results:")
             df1_not_in_df2.show(truncate=False)
             print("Rows in expected results not in actual results:")
             df2_not_in_df1.show(truncate=False)
             return False
-
         return True
+            
+    def _print_failure(self, test_name, reason):
+        """Print the failure message for a test."""
+        print(f"========== {test_name} ==========")
+        print(f"Status: FAILED")
+        print(f"Reason: {reason}")
+        print(f"=================================")
 
-
+    def _print_test_result(self, test_name, result):
+        """Print the result of a test."""
+        print(f"========== {test_name} ==========")
+        print(f"Status: {result}")
+        print(f"=================================")
+        print("\n")
+    
 
 if __name__ == '__main__':
     unittest.main()
