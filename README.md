@@ -1,7 +1,7 @@
 # Graph Analysis
 
 ## Overview
-This project provides a PySpark application, a Python-based solution for analyzing graph data to find common neighbors between nodes. It is designed to handle large datasets using Apache Spark and can output results in various formats.
+This project provides a PySpark application, a Python-based solution for analyzing graph data to find common neighbors between nodes in directed and undirected graphs. It is designed to handle large datasets using Apache Spark and can output results in various formats.
 
 ## Structure
 The project directory is organized as follows:
