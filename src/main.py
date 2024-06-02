@@ -13,6 +13,7 @@ OUTPUT_FILE_TEMPLATE = 'output_{current_time}.csv'
 FILENAME_DATE_FORMAT = "%Y%m%d_%H%M%S"
 SAVE = "save"
 
+
 def setup_default_output_path(args: argparse.Namespace, current_time: str) -> None:
     """
     Sets up the default path for saving output csv file if not specified.
@@ -47,6 +48,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('--undirected', action='store_true', help='Treat the graph as undirected')
     return parser
 
+
 def parse_args(current_time: str) -> argparse.Namespace:
     """
     Parses command line arguments needed. Sets up default paths for output if necessary.
@@ -64,6 +66,7 @@ def parse_args(current_time: str) -> argparse.Namespace:
         setup_default_output_path(args, current_time)
     return args
 
+
 def run_analysis(spark: SparkSession, n: int, input_path: str, output_mode: str, output_path: str, is_undirected: bool) -> None:
     """
     Runs the graph analysis to find common neighbors and handles output based on specified mode.
@@ -80,6 +83,7 @@ def run_analysis(spark: SparkSession, n: int, input_path: str, output_mode: str,
     top_pairs = find_common_neighbors(df, n, is_undirected)  #TODO: Duplicated edge
     handle_output(top_pairs, output_mode, output_path)
 
+
 def main():
     """
     Main function for running the graph analysis application.
@@ -94,7 +98,7 @@ def main():
     try:
         args = parse_args(current_time)
         logging.info(f"Running analysis with settings: {args}.")
-        spark, logger = create_spark_session()
+        spark = create_spark_session()
         
         run_analysis(spark, args.n, args.input, args.output_mode, args.output_path, args.undirected)
         logging.info("Analysis completed.")
@@ -104,6 +108,7 @@ def main():
     finally:
         logging.info("Shutting down the application.")
         spark.stop()
+
 
 if __name__ == "__main__":
     if '-h' in sys.argv or '--help' in sys.argv:

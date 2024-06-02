@@ -12,12 +12,9 @@ def create_spark_session() -> SparkSession:
         SparkSession: Configured Spark session.
     """
     # TODO: Try with hadoop
-    spark = SparkSession.builder \
+    return SparkSession.builder \
         .appName("Graph Analysis") \
         .getOrCreate()
-    log4jLogger = spark._jvm.org.apache.log4j
-    logger = log4jLogger.LogManager.getLogger(__name__)
-    return spark, logger
 
 
 def check_for_csv_files(spark_session: SparkSession, path: str):
@@ -65,7 +62,7 @@ def load_csv_to_df(spark_session: SparkSession, path: str) -> DataFrame:
         path (str): Path to the directory containing the CSV files.
 
     Returns:
-        DataFrame: A Dataframe containing the data loaded from the CSV files.
+        DataFrame: A DataFrame containing the data loaded from the CSV files.
     """
     logging.info(f"Attempting to load CSV data from directory: {path}.")    
     check_for_csv_files(spark_session, path)
@@ -110,7 +107,7 @@ def find_common_neighbors(df: DataFrame, n: int, is_undirected: bool):
     
 
     Args:
-        df (DataFrame): The Dataframe representing the graph.
+        df (DataFrame): The DataFrame representing the graph.
         n (int): The number of top pairs to retrieve.
         is_undirected (bool): Flag indicating if the graph is undirected.
 
@@ -158,7 +155,7 @@ def handle_output(df, output_mode, output_path=None):
     Args:
         df (DataFrame): The DataFrame to output.
         output_mode (str): The mode of output; either 'formatted_display', 'show' or 'save'.
-        output_path (str, optional): The path where the Dataframe should be saved if the mode is 'save'.
+        output_path (str, optional): The path where the DataFrame should be saved if the mode is 'save'.
     """
     logging.info(f"Handling output, mode: {output_mode}.")
     if output_mode == 'show':
