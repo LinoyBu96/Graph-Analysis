@@ -14,7 +14,7 @@ The project directory is organized as follows:
 - `logs/`: Directory for log files (created during runtime).
 - `input/`: Contains a default directory for input.
   - `data/`: An example input - a directory that stores a CSV file.
-    - `1.csv`: A CSV file to be read by the PySpark app.
+    - `data.csv`: A CSV file to be read by the PySpark app.
 - `output/`: Stores output files, typically CSVs, from analyses (created during runtime).
 - `requirements.txt`: Specifies Python dependencies.
 - `README.md`: Provides documentation.
@@ -35,7 +35,7 @@ Before running the application, configure the input parameters in the command li
 
 - `-n`: Number of top node pairs to retrieve (required).
 - `--input`: Path to the CSV files containing the graph data (required).
-- `--output_mode`: Output mode. Choose `show` to display on console, `save` to save to a CSV file, or `formatted_display` to display on console in the following format:
+- `--output_mode`: Output mode. Choose `show` to display on console, `save` to save to a CSV file, or `formatted_display` (default) to display on console in the following format:
   - `node1 = 101, node2 = 105, common = 2`
   - `node1 = 104, node2 = 107, common = 1`
   - `node1 = 101, node2 = 107, common = 1`
@@ -44,7 +44,7 @@ Before running the application, configure the input parameters in the command li
 
 ## Running the Application
 
-To run the application, use the following command from the root directory of your project. For example:
+To run the application, use the `python3 ./src/main.py` command and the flags above from the root directory of your project. For example:
 
 ```bash
 python3 ./src/main.py -n 3 --input input/data --output_mode show
