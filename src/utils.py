@@ -4,7 +4,6 @@ import logging
 import os
 from glob import glob
 
-
 def create_spark_session() -> SparkSession:
     """
     Create and return a Spark session.
@@ -13,9 +12,12 @@ def create_spark_session() -> SparkSession:
         SparkSession: Configured Spark session.
     """
     # TODO: Try with hadoop
-    return SparkSession.builder \
+    spark = SparkSession.builder \
         .appName("Graph Analysis") \
         .getOrCreate()
+    log4jLogger = spark._jvm.org.apache.log4j
+    logger = log4jLogger.LogManager.getLogger(__name__)
+    return spark, logger
 
 
 def check_for_csv_files(spark_session: SparkSession, path: str):
@@ -39,7 +41,8 @@ def check_for_csv_files(spark_session: SparkSession, path: str):
 
     # Check if the directory exists
     if not fs.exists(hadoop_path):
-        logging.error(f"The specified directory does not exist: {path}.")
+        error_message = f"The specified directory does not exist: {path}."
+        logging.error(error_message)
         raise FileNotFoundError(error_message)
 
     # Check if there are any CSV files in the directory
@@ -145,6 +148,16 @@ def find_common_neighbors(df: DataFrame, n: int, is_undirected: bool):
     return common_neighbors_df
     
 
+def formatted_display(results: list) -> None:
+    """Prints the results in a list-like format, showing the node pairs and their common neighbors.
+
+    Args:
+        results (list): A list of rows where each row has 'node1', 'node2', and 'common' attributes.
+    """
+    for row in results:
+        print(f"node1 = {row.node1}, node2 = {row.node2}, common = {row.common}")
+
+
 def handle_output(df, output_mode, output_path=None):
     """
     Handle the output of DataFrame based on the specified mode.
@@ -153,13 +166,15 @@ def handle_output(df, output_mode, output_path=None):
 
     Args:
         df (DataFrame): The DataFrame to output.
-        output_mode (str): The mode of output; either 'show' or 'save'.
+        output_mode (str): The mode of output; either 'formatted_display', 'show' or 'save'.
         output_path (str, optional): The path where the Dataframe should be saved if the mode is 'save'.
     """
     logging.info(f"Handling output, mode: {output_mode}.")
     if output_mode == 'show':
         logging.info("Displaying DataFrame.")
         df.show()
+    elif output_mode == "formatted_display":
+        formatted_display(df.collect())
     elif output_mode == 'save':
         if output_path is not None:
             logging.info(f"Saving DataFrame to {output_path}.")

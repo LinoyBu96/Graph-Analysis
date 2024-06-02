@@ -74,7 +74,6 @@ class TestCommonNeighbors(PySparkTestCase):
         test_dir = os.path.join(self.base_test_dir, "test_no_common_neighbors")
         self.run_sub_tests(test_dir)
 
-
     def test_empty_dir(self):
         test_dir = os.path.join(self.base_test_dir, "test_empty_dir\input")
         with self.assertRaises(FileNotFoundError) as context:
@@ -89,9 +88,7 @@ class TestCommonNeighbors(PySparkTestCase):
             load_csv_to_df(self.spark, test_dir)
         
         # Check if the error message is correct
-        self.assertIn(f"The specified directory does not exist: {test_dir}", str(context.exception))
-
-        
+        self.assertIn(f"The specified directory does not exist: {test_dir}.", str(context.exception))
     
     def areDataFramesEqual(self, df1, df2, tol=0):
         """ Check if two dataframes are equal, allowing for a tolerance in numeric columns """

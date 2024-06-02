@@ -13,7 +13,7 @@ OUTPUT_FILE_TEMPLATE = 'output_{current_time}.csv'
 FILENAME_DATE_FORMAT = "%Y%m%d_%H%M%S"
 SAVE = "save"
 
-# sys.argv = ['ipykernel_launcher.py', '-n', '20', '--input', 'input/data3', '--output_mode', 'show']
+sys.argv = ['ipykernel_launcher.py', '-n', '3', '--input', 'input/data', '--output_mode', 'show']
 
 def setup_default_output_path(args: argparse.Namespace, current_time: str) -> None:
     """
@@ -44,7 +44,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description='Graph Analysis to find common neighbors.')
     parser.add_argument('-n', type=int, required=True, help='Number of top node pairs to retrieve')
     parser.add_argument('--input', required=True, help='Input path to the CSV files containing the graph data')
-    parser.add_argument('--output_mode', choices=['show', 'save'], required=True, help='Output mode: "show" on console or "save" to CSV file')
+    parser.add_argument("--output_mode", choices=["show", "save", "formatted_display"], default="formatted_display", help="Output mode")
     parser.add_argument('--output_path', help='Path to save the results if output mode is "save"')
     parser.add_argument('--undirected', action='store_true', help='Treat the graph as undirected')
     return parser
@@ -74,7 +74,7 @@ def run_analysis(spark: SparkSession, n: int, input_path: str, output_mode: str,
         spark (SparkSession): A Spark session object.
         n (int): Number of top pairs to retrieve.
         input_path (str): The path to the CSV files directory containing the graph data.
-        output_mode (str): Mode of output, either 'show' or 'save'.
+        output_mode (str): Mode of output, either 'formatted_display', 'show' or 'save'.
         output_path (str): Path where the output should be saved, for save mode.
         is_undirected (bool): Flag indicating whether the graph should be treated as undirected.
     """
@@ -96,7 +96,8 @@ def main():
     try:
         args = parse_args(current_time)
         logging.info(f"Running analysis with settings: {args}.")
-        spark = create_spark_session()
+        spark, logger = create_spark_session()
+        
         run_analysis(spark, args.n, args.input, args.output_mode, args.output_path, args.undirected)
         logging.info("Analysis completed.")
     except Exception as e:

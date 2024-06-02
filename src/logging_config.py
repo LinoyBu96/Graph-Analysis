@@ -21,7 +21,7 @@ def setup_logging(current_time):
 
     # Console handler to output logs to the console
     console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
+    console.setLevel(logging.WARN)
     # set a format which is simpler for console use
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     console.setFormatter(formatter)

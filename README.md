@@ -1,8 +1,7 @@
 # Graph Analysis
 
 ## Overview
-This project provides a PySpark application which is a Python-based solution for analyzing graph data to find common neighbors between nodes.
-It is designed to handle large datasets using Apache Spark and can output results in various formats.
+This project provides a PySpark application, a Python-based solution for analyzing graph data to find common neighbors between nodes. It is designed to handle large datasets using Apache Spark and can output results in various formats.
 
 ## Structure
 The project directory is organized as follows:
@@ -18,15 +17,15 @@ The project directory is organized as follows:
     - `1.csv`: A CSV file to be read by the PySpark app.
 - `output/`: Stores output files, typically CSVs, from analyses (created during runtime).
 - `requirements.txt`: Specifies Python dependencies.
-- `README.md`: Readme file, providing documentation.
+- `README.md`: Provides documentation.
 
 ## Installation
 
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/LinoyBu96/Graph-Analysis.git
-cd graph-analysis
+git clone https://github.com/yourusername/Graph-Analysis.git
+cd Graph-Analysis
 pip install -r requirements.txt
 ```
 
@@ -34,18 +33,21 @@ pip install -r requirements.txt
 
 Before running the application, configure the input parameters in the command line as follows:
 
-- `-n`: Number of top node pairs to retrieve (required)
-- `--input`: Path to the CSV files containing the graph data (required)
-- `--output_mode`: Output mode, choose `show` to display on console or `save` to save to CSV file (required)
-- `--output_path`: Path to save the results if output mode is "save" (optional, will default to `./output/output_{current_time}.csv` if not provided)
-- `--undirected`: Treat the graph as undirected (optional, add this flag to treat the graph as undirected)
+- `-n`: Number of top node pairs to retrieve (required).
+- `--input`: Path to the CSV files containing the graph data (required).
+- `--output_mode`: Output mode. Choose `show` to display on console, `save` to save to a CSV file, or `formatted_display` to display on console in the following format:
+  - `node1 = 101, node2 = 105, common = 2`
+  - `node1 = 104, node2 = 107, common = 1`
+  - `node1 = 101, node2 = 107, common = 1`
+- `--output_path`: Path to save the results if the output mode is "save" (optional, will default to `./output/output_{current_time}.csv` if not provided).
+- `--undirected`: Treat the graph as undirected (optional, add this flag to treat the graph as undirected).
 
 ## Running the Application
 
 To run the application, use the following command from the root directory of your project. For example:
 
 ```bash
-python3 .\src\main.py -n 3 --input input/data --output_mode show
+python3 ./src/main.py -n 3 --input input/data --output_mode show
 ```
 
 ## Output
@@ -56,7 +58,3 @@ python3 .\src\main.py -n 3 --input input/data --output_mode show
 ## Additional Notes
 
 - Ensure your Spark session is configured correctly in `src/utils.py` if modifications are needed.
-- Check the `src/logging_config.py` for adjusting log levels and formats to match your preferences or requirements.
-
-
-
